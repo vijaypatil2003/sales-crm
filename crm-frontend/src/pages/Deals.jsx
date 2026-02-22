@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useState } from "react";
 import api from "../api/axios";
 
@@ -15,7 +13,7 @@ function Deals() {
         setLoading(true);
         setError(false);
         const res = await api.get(`/deals?stage=${stage}`);
-        setDeals(res.data.data);
+        setDeals(res.data.data.deals);
       } catch {
         setError(true);
       } finally {
@@ -30,8 +28,8 @@ function Deals() {
       await api.patch(`/deals/${dealId}/stage`, { stage: newStage });
       setDeals((prev) =>
         prev.map((deal) =>
-          deal._id === dealId ? { ...deal, stage: newStage } : deal
-        )
+          deal._id === dealId ? { ...deal, stage: newStage } : deal,
+        ),
       );
     } catch {
       alert("Failed to update stage");
@@ -40,11 +38,16 @@ function Deals() {
 
   const getStageColor = (stage) => {
     switch (stage) {
-      case "Prospect": return "bg-yellow-500";
-      case "Negotiation": return "bg-blue-500";
-      case "Won": return "bg-green-500";
-      case "Lost": return "bg-red-500";
-      default: return "bg-gray-500";
+      case "Prospect":
+        return "bg-yellow-500";
+      case "Negotiation":
+        return "bg-blue-500";
+      case "Won":
+        return "bg-green-500";
+      case "Lost":
+        return "bg-red-500";
+      default:
+        return "bg-gray-500";
     }
   };
 
@@ -93,7 +96,9 @@ function Deals() {
                   <td>
                     <select
                       value={deal.stage}
-                      onChange={(e) => handleStageChange(deal._id, e.target.value)}
+                      onChange={(e) =>
+                        handleStageChange(deal._id, e.target.value)
+                      }
                       className={`text-white px-2 py-1 rounded ${getStageColor(deal.stage)}`}
                     >
                       <option value="Prospect">Prospect</option>
@@ -102,7 +107,11 @@ function Deals() {
                       <option value="Lost">Lost</option>
                     </select>
                   </td>
-                  <td>{deal.closeDate ? new Date(deal.closeDate).toLocaleDateString() : "N/A"}</td>
+                  <td>
+                    {deal.closeDate
+                      ? new Date(deal.closeDate).toLocaleDateString()
+                      : "N/A"}
+                  </td>
                 </tr>
               ))}
             </tbody>

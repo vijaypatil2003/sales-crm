@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../api/axios";
@@ -38,7 +37,13 @@ function LeadDetail() {
   const [error, setError] = useState(false);
 
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({ name: "", email: "", phone: "", company: "", status: "" });
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    company: "",
+    status: "",
+  });
 
   const [salesUsers, setSalesUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState("");
@@ -69,7 +74,7 @@ function LeadDetail() {
         ]);
         setLead(leadRes.data.data);
         setFormData(leadRes.data.data);
-        setDeals(dealsRes.data.data);
+        setDeals(dealsRes.data.data.deals);
         setActivities(activityRes.data.data.activities);
       } catch {
         setError(true);
@@ -85,7 +90,9 @@ function LeadDetail() {
       const fetchUsers = async () => {
         try {
           const res = await api.get("/auth/users");
-          setSalesUsers(res.data.data.filter((u) => u.role?.toLowerCase() !== "admin"));
+          setSalesUsers(
+            res.data.data.filter((u) => u.role?.toLowerCase() !== "admin"),
+          );
         } catch {}
       };
       fetchUsers();
@@ -116,7 +123,9 @@ function LeadDetail() {
     if (!selectedUser) return;
     try {
       setReassigning(true);
-      const res = await api.patch(`/leads/${id}/reassign`, { assignedTo: selectedUser });
+      const res = await api.patch(`/leads/${id}/reassign`, {
+        assignedTo: selectedUser,
+      });
       setLead(res.data.data);
       alert("Lead reassigned successfully");
     } catch {
@@ -128,10 +137,17 @@ function LeadDetail() {
 
   const handleAddActivity = async (e) => {
     e.preventDefault();
-    if (!activityDescription.trim()) { alert("Description is required"); return; }
+    if (!activityDescription.trim()) {
+      alert("Description is required");
+      return;
+    }
     try {
       setActivitySubmitting(true);
-      const res = await api.post("/activity", { leadId: id, type: activityType, description: activityDescription });
+      const res = await api.post("/activity", {
+        leadId: id,
+        type: activityType,
+        description: activityDescription,
+      });
       setActivities((prev) => [res.data.data, ...prev]);
       setActivityDescription("");
     } catch {
@@ -143,10 +159,17 @@ function LeadDetail() {
 
   const handleAddDeal = async (e) => {
     e.preventDefault();
-    if (!dealAmount || dealAmount <= 0) { alert("Valid amount is required"); return; }
+    if (!dealAmount || dealAmount <= 0) {
+      alert("Valid amount is required");
+      return;
+    }
     try {
       setDealSubmitting(true);
-      const res = await api.post("/deals", { leadId: id, amount: Number(dealAmount), closeDate: dealCloseDate || null });
+      const res = await api.post("/deals", {
+        leadId: id,
+        amount: Number(dealAmount),
+        closeDate: dealCloseDate || null,
+      });
       setDeals((prev) => [res.data.data, ...prev]);
       setDealAmount("");
       setDealCloseDate("");
@@ -160,18 +183,28 @@ function LeadDetail() {
   const handleStageChange = async (dealId, newStage) => {
     try {
       await api.patch(`/deals/${dealId}/stage`, { stage: newStage });
-      setDeals((prev) => prev.map((d) => d._id === dealId ? { ...d, stage: newStage } : d));
+      setDeals((prev) =>
+        prev.map((d) => (d._id === dealId ? { ...d, stage: newStage } : d)),
+      );
     } catch {
       alert("Failed to update stage");
     }
   };
 
   const handleUpdateDeal = async (dealId) => {
-    if (!editDealAmount || editDealAmount <= 0) { alert("Valid amount is required"); return; }
+    if (!editDealAmount || editDealAmount <= 0) {
+      alert("Valid amount is required");
+      return;
+    }
     try {
       setDealUpdating(true);
-      const res = await api.patch(`/deals/${dealId}`, { amount: Number(editDealAmount), closeDate: editDealCloseDate || null });
-      setDeals((prev) => prev.map((d) => d._id === dealId ? res.data.data : d));
+      const res = await api.patch(`/deals/${dealId}`, {
+        amount: Number(editDealAmount),
+        closeDate: editDealCloseDate || null,
+      });
+      setDeals((prev) =>
+        prev.map((d) => (d._id === dealId ? res.data.data : d)),
+      );
       setEditingDeal(null);
     } catch {
       alert("Failed to update deal");
@@ -190,30 +223,40 @@ function LeadDetail() {
     }
   };
 
-  if (loading) return (
-    <div className="flex items-center justify-center h-64">
-      <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-600 border-t-transparent"></div>
-    </div>
-  );
-  if (error) return <p className="p-6 text-red-500">Failed to load lead details</p>;
+  if (loading)
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-600 border-t-transparent"></div>
+      </div>
+    );
+  if (error)
+    return <p className="p-6 text-red-500">Failed to load lead details</p>;
   if (!lead) return <p className="p-6">Lead not found</p>;
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-
       {/* Header */}
       <div className="flex items-center justify-between">
-        <button onClick={() => navigate("/leads")} className="flex items-center gap-2 text-gray-500 hover:text-gray-700 text-sm font-medium">
+        <button
+          onClick={() => navigate("/leads")}
+          className="flex items-center gap-2 text-gray-500 hover:text-gray-700 text-sm font-medium"
+        >
           ← Back to Leads
         </button>
         <div className="flex gap-2">
           {!isEditing && (
-            <button onClick={() => setIsEditing(true)} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">
+            <button
+              onClick={() => setIsEditing(true)}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700"
+            >
               ✏️ Edit Lead
             </button>
           )}
           {isAdmin && (
-            <button onClick={handleDelete} className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700">
+            <button
+              onClick={handleDelete}
+              className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700"
+            >
               🗑️ Delete
             </button>
           )}
@@ -227,9 +270,13 @@ function LeadDetail() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-white">{lead.name}</h1>
-              <p className="text-blue-200 text-sm mt-1">{lead.company || "No company"}</p>
+              <p className="text-blue-200 text-sm mt-1">
+                {lead.company || "No company"}
+              </p>
             </div>
-            <span className={`px-3 py-1 rounded-full text-sm font-semibold border ${statusColors[lead.status] || "bg-gray-100 text-gray-600"}`}>
+            <span
+              className={`px-3 py-1 rounded-full text-sm font-semibold border ${statusColors[lead.status] || "bg-gray-100 text-gray-600"}`}
+            >
               {lead.status}
             </span>
           </div>
@@ -240,60 +287,119 @@ function LeadDetail() {
           {!isEditing ? (
             <div className="grid grid-cols-2 gap-6">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center text-lg">📧</div>
+                <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center text-lg">
+                  📧
+                </div>
                 <div>
-                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Email</p>
-                  <p className="text-gray-800 font-medium">{lead.email || "N/A"}</p>
+                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">
+                    Email
+                  </p>
+                  <p className="text-gray-800 font-medium">
+                    {lead.email || "N/A"}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-green-50 flex items-center justify-center text-lg">📞</div>
+                <div className="w-9 h-9 rounded-full bg-green-50 flex items-center justify-center text-lg">
+                  📞
+                </div>
                 <div>
-                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Phone</p>
-                  <p className="text-gray-800 font-medium">{lead.phone || "N/A"}</p>
+                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">
+                    Phone
+                  </p>
+                  <p className="text-gray-800 font-medium">
+                    {lead.phone || "N/A"}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-purple-50 flex items-center justify-center text-lg">🏢</div>
+                <div className="w-9 h-9 rounded-full bg-purple-50 flex items-center justify-center text-lg">
+                  🏢
+                </div>
                 <div>
-                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Company</p>
-                  <p className="text-gray-800 font-medium">{lead.company || "N/A"}</p>
+                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">
+                    Company
+                  </p>
+                  <p className="text-gray-800 font-medium">
+                    {lead.company || "N/A"}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-orange-50 flex items-center justify-center text-lg">👤</div>
+                <div className="w-9 h-9 rounded-full bg-orange-50 flex items-center justify-center text-lg">
+                  👤
+                </div>
                 <div>
-                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Assigned To</p>
-                  <p className="text-gray-800 font-medium">{lead.assignedTo?.name || "N/A"}</p>
+                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">
+                    Assigned To
+                  </p>
+                  <p className="text-gray-800 font-medium">
+                    {lead.assignedTo?.name || "N/A"}
+                  </p>
                 </div>
               </div>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs text-gray-500 font-medium uppercase tracking-wide">Name *</label>
-                <input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="mt-1 border border-gray-200 p-2.5 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <label className="text-xs text-gray-500 font-medium uppercase tracking-wide">
+                  Name *
+                </label>
+                <input
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  className="mt-1 border border-gray-200 p-2.5 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
               </div>
               <div>
-                <label className="text-xs text-gray-500 font-medium uppercase tracking-wide">Email</label>
-                <input value={formData.email || ""} onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="mt-1 border border-gray-200 p-2.5 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <label className="text-xs text-gray-500 font-medium uppercase tracking-wide">
+                  Email
+                </label>
+                <input
+                  value={formData.email || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                  className="mt-1 border border-gray-200 p-2.5 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
               </div>
               <div>
-                <label className="text-xs text-gray-500 font-medium uppercase tracking-wide">Phone</label>
-                <input value={formData.phone || ""} onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="mt-1 border border-gray-200 p-2.5 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <label className="text-xs text-gray-500 font-medium uppercase tracking-wide">
+                  Phone
+                </label>
+                <input
+                  value={formData.phone || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, phone: e.target.value })
+                  }
+                  className="mt-1 border border-gray-200 p-2.5 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
               </div>
               <div>
-                <label className="text-xs text-gray-500 font-medium uppercase tracking-wide">Company</label>
-                <input value={formData.company || ""} onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                  className="mt-1 border border-gray-200 p-2.5 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <label className="text-xs text-gray-500 font-medium uppercase tracking-wide">
+                  Company
+                </label>
+                <input
+                  value={formData.company || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, company: e.target.value })
+                  }
+                  className="mt-1 border border-gray-200 p-2.5 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
               </div>
               <div className="col-span-2">
-                <label className="text-xs text-gray-500 font-medium uppercase tracking-wide">Status</label>
-                <select value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  className="mt-1 border border-gray-200 p-2.5 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <label className="text-xs text-gray-500 font-medium uppercase tracking-wide">
+                  Status
+                </label>
+                <select
+                  value={formData.status}
+                  onChange={(e) =>
+                    setFormData({ ...formData, status: e.target.value })
+                  }
+                  className="mt-1 border border-gray-200 p-2.5 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
                   <option value="New">New</option>
                   <option value="Contacted">Contacted</option>
                   <option value="Qualified">Qualified</option>
@@ -301,8 +407,18 @@ function LeadDetail() {
                 </select>
               </div>
               <div className="col-span-2 flex gap-3 mt-2">
-                <button onClick={handleSave} className="bg-green-600 text-white px-5 py-2 rounded-lg font-medium hover:bg-green-700">Save Changes</button>
-                <button onClick={() => setIsEditing(false)} className="bg-gray-100 text-gray-700 px-5 py-2 rounded-lg font-medium hover:bg-gray-200">Cancel</button>
+                <button
+                  onClick={handleSave}
+                  className="bg-green-600 text-white px-5 py-2 rounded-lg font-medium hover:bg-green-700"
+                >
+                  Save Changes
+                </button>
+                <button
+                  onClick={() => setIsEditing(false)}
+                  className="bg-gray-100 text-gray-700 px-5 py-2 rounded-lg font-medium hover:bg-gray-200"
+                >
+                  Cancel
+                </button>
               </div>
             </div>
           )}
@@ -316,15 +432,23 @@ function LeadDetail() {
             🔄 Reassign Lead
           </h2>
           <div className="flex gap-3">
-            <select value={selectedUser} onChange={(e) => setSelectedUser(e.target.value)}
-              className="flex-1 border border-gray-200 p-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+            <select
+              value={selectedUser}
+              onChange={(e) => setSelectedUser(e.target.value)}
+              className="flex-1 border border-gray-200 p-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+            >
               <option value="">Select Sales Person</option>
               {salesUsers.map((u) => (
-                <option key={u._id} value={u._id}>{u.name} — {u.email}</option>
+                <option key={u._id} value={u._id}>
+                  {u.name} — {u.email}
+                </option>
               ))}
             </select>
-            <button onClick={handleReassign} disabled={reassigning || !selectedUser}
-              className="bg-purple-600 text-white px-5 py-2 rounded-lg font-medium hover:bg-purple-700 disabled:opacity-50">
+            <button
+              onClick={handleReassign}
+              disabled={reassigning || !selectedUser}
+              className="bg-purple-600 text-white px-5 py-2 rounded-lg font-medium hover:bg-purple-700 disabled:opacity-50"
+            >
               {reassigning ? "Reassigning..." : "Reassign"}
             </button>
           </div>
@@ -334,12 +458,16 @@ function LeadDetail() {
       {/* Tabs */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="flex border-b border-gray-100">
-          <button onClick={() => setActiveTab("activities")}
-            className={`flex-1 py-4 text-sm font-semibold transition-colors ${activeTab === "activities" ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50" : "text-gray-500 hover:text-gray-700"}`}>
+          <button
+            onClick={() => setActiveTab("activities")}
+            className={`flex-1 py-4 text-sm font-semibold transition-colors ${activeTab === "activities" ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50" : "text-gray-500 hover:text-gray-700"}`}
+          >
             📋 Activities ({activities.length})
           </button>
-          <button onClick={() => setActiveTab("deals")}
-            className={`flex-1 py-4 text-sm font-semibold transition-colors ${activeTab === "deals" ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50" : "text-gray-500 hover:text-gray-700"}`}>
+          <button
+            onClick={() => setActiveTab("deals")}
+            className={`flex-1 py-4 text-sm font-semibold transition-colors ${activeTab === "deals" ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50" : "text-gray-500 hover:text-gray-700"}`}
+          >
             💼 Deals ({deals.length})
           </button>
         </div>
@@ -348,19 +476,32 @@ function LeadDetail() {
         {activeTab === "activities" && (
           <div className="p-6">
             {/* Add Activity Form */}
-            <form onSubmit={handleAddActivity} className="flex gap-3 mb-6 flex-wrap">
-              <select value={activityType} onChange={(e) => setActivityType(e.target.value)}
-                className="border border-gray-200 p-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <form
+              onSubmit={handleAddActivity}
+              className="flex gap-3 mb-6 flex-wrap"
+            >
+              <select
+                value={activityType}
+                onChange={(e) => setActivityType(e.target.value)}
+                className="border border-gray-200 p-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
                 <option value="Call">📞 Call</option>
                 <option value="Meeting">🤝 Meeting</option>
                 <option value="Note">📝 Note</option>
                 <option value="Follow-up">🔔 Follow-up</option>
               </select>
-              <input type="text" placeholder="Add a description..." value={activityDescription}
+              <input
+                type="text"
+                placeholder="Add a description..."
+                value={activityDescription}
                 onChange={(e) => setActivityDescription(e.target.value)}
-                className="flex-1 border border-gray-200 p-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-48" />
-              <button type="submit" disabled={activitySubmitting}
-                className="bg-blue-600 text-white px-5 py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50">
+                className="flex-1 border border-gray-200 p-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-48"
+              />
+              <button
+                type="submit"
+                disabled={activitySubmitting}
+                className="bg-blue-600 text-white px-5 py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50"
+              >
                 {activitySubmitting ? "Adding..." : "+ Add"}
               </button>
             </form>
@@ -374,17 +515,31 @@ function LeadDetail() {
             ) : (
               <div className="space-y-3">
                 {activities.map((activity) => (
-                  <div key={activity._id} className="flex gap-4 p-4 rounded-xl bg-gray-50 border border-gray-100">
+                  <div
+                    key={activity._id}
+                    className="flex gap-4 p-4 rounded-xl bg-gray-50 border border-gray-100"
+                  >
                     <div className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-xl flex-shrink-0">
                       {activityIcons[activity.type] || "📌"}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-blue-600 uppercase tracking-wide">{activity.type}</span>
-                        <span className="text-xs text-gray-400">{new Date(activity.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
+                        <span className="text-xs font-semibold text-blue-600 uppercase tracking-wide">
+                          {activity.type}
+                        </span>
+                        <span className="text-xs text-gray-400">
+                          {new Date(activity.createdAt).toLocaleDateString(
+                            "en-IN",
+                            { day: "numeric", month: "short", year: "numeric" },
+                          )}
+                        </span>
                       </div>
-                      <p className="text-gray-700 mt-1">{activity.description}</p>
-                      <p className="text-xs text-gray-400 mt-1">by {activity.createdBy?.name || "N/A"}</p>
+                      <p className="text-gray-700 mt-1">
+                        {activity.description}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        by {activity.createdBy?.name || "N/A"}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -397,20 +552,39 @@ function LeadDetail() {
         {activeTab === "deals" && (
           <div className="p-6">
             {/* Add Deal Form */}
-            <form onSubmit={handleAddDeal} className="flex gap-3 mb-6 flex-wrap items-end">
+            <form
+              onSubmit={handleAddDeal}
+              className="flex gap-3 mb-6 flex-wrap items-end"
+            >
               <div>
-                <label className="text-xs text-gray-500 font-medium block mb-1">Amount (₹)</label>
-                <input type="number" placeholder="e.g. 50000" value={dealAmount}
-                  onChange={(e) => setDealAmount(e.target.value)} min={1}
-                  className="border border-gray-200 p-2.5 rounded-lg w-40 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <label className="text-xs text-gray-500 font-medium block mb-1">
+                  Amount (₹)
+                </label>
+                <input
+                  type="number"
+                  placeholder="e.g. 50000"
+                  value={dealAmount}
+                  onChange={(e) => setDealAmount(e.target.value)}
+                  min={1}
+                  className="border border-gray-200 p-2.5 rounded-lg w-40 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
               </div>
               <div>
-                <label className="text-xs text-gray-500 font-medium block mb-1">Close Date</label>
-                <input type="date" value={dealCloseDate} onChange={(e) => setDealCloseDate(e.target.value)}
-                  className="border border-gray-200 p-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <label className="text-xs text-gray-500 font-medium block mb-1">
+                  Close Date
+                </label>
+                <input
+                  type="date"
+                  value={dealCloseDate}
+                  onChange={(e) => setDealCloseDate(e.target.value)}
+                  className="border border-gray-200 p-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
               </div>
-              <button type="submit" disabled={dealSubmitting}
-                className="bg-green-600 text-white px-5 py-2.5 rounded-lg font-medium hover:bg-green-700 disabled:opacity-50">
+              <button
+                type="submit"
+                disabled={dealSubmitting}
+                className="bg-green-600 text-white px-5 py-2.5 rounded-lg font-medium hover:bg-green-700 disabled:opacity-50"
+              >
                 {dealSubmitting ? "Adding..." : "+ Add Deal"}
               </button>
             </form>
@@ -424,43 +598,104 @@ function LeadDetail() {
             ) : (
               <div className="space-y-3">
                 {deals.map((deal) => (
-                  <div key={deal._id} className="p-4 rounded-xl border border-gray-100 bg-gray-50">
+                  <div
+                    key={deal._id}
+                    className="p-4 rounded-xl border border-gray-100 bg-gray-50"
+                  >
                     {editingDeal === deal._id ? (
                       <div className="flex gap-3 flex-wrap items-center">
-                        <input type="number" value={editDealAmount} onChange={(e) => setEditDealAmount(e.target.value)}
-                          className="border border-gray-200 p-2 rounded-lg w-36 focus:outline-none focus:ring-2 focus:ring-blue-500" min={1} />
-                        <input type="date" value={editDealCloseDate} onChange={(e) => setEditDealCloseDate(e.target.value)}
-                          className="border border-gray-200 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                        <button onClick={() => handleUpdateDeal(deal._id)} disabled={dealUpdating}
-                          className="bg-green-600 text-white px-3 py-2 rounded-lg text-sm disabled:opacity-50">Save</button>
-                        <button onClick={() => setEditingDeal(null)}
-                          className="bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm">Cancel</button>
+                        <input
+                          type="number"
+                          value={editDealAmount}
+                          onChange={(e) => setEditDealAmount(e.target.value)}
+                          className="border border-gray-200 p-2 rounded-lg w-36 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          min={1}
+                        />
+                        <input
+                          type="date"
+                          value={editDealCloseDate}
+                          onChange={(e) => setEditDealCloseDate(e.target.value)}
+                          className="border border-gray-200 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                        <button
+                          onClick={() => handleUpdateDeal(deal._id)}
+                          disabled={dealUpdating}
+                          className="bg-green-600 text-white px-3 py-2 rounded-lg text-sm disabled:opacity-50"
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={() => setEditingDeal(null)}
+                          className="bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm"
+                        >
+                          Cancel
+                        </button>
                       </div>
                     ) : (
                       <div className="flex items-center justify-between flex-wrap gap-3">
                         <div className="flex items-center gap-4">
                           <div>
-                            <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Amount</p>
-                            <p className="text-lg font-bold text-gray-800">₹ {deal.amount.toLocaleString("en-IN")}</p>
+                            <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">
+                              Amount
+                            </p>
+                            <p className="text-lg font-bold text-gray-800">
+                              ₹ {deal.amount.toLocaleString("en-IN")}
+                            </p>
                           </div>
                           <div>
-                            <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Close Date</p>
-                            <p className="text-sm text-gray-700">{deal.closeDate ? new Date(deal.closeDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "Not set"}</p>
+                            <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">
+                              Close Date
+                            </p>
+                            <p className="text-sm text-gray-700">
+                              {deal.closeDate
+                                ? new Date(deal.closeDate).toLocaleDateString(
+                                    "en-IN",
+                                    {
+                                      day: "numeric",
+                                      month: "short",
+                                      year: "numeric",
+                                    },
+                                  )
+                                : "Not set"}
+                            </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
-                          <select value={deal.stage} onChange={(e) => handleStageChange(deal._id, e.target.value)}
-                            className={`text-white text-sm font-semibold px-3 py-1.5 rounded-lg border-0 ${stageColors[deal.stage]}`}>
+                          <select
+                            value={deal.stage}
+                            onChange={(e) =>
+                              handleStageChange(deal._id, e.target.value)
+                            }
+                            className={`text-white text-sm font-semibold px-3 py-1.5 rounded-lg border-0 ${stageColors[deal.stage]}`}
+                          >
                             <option value="Prospect">Prospect</option>
                             <option value="Negotiation">Negotiation</option>
                             <option value="Won">Won</option>
                             <option value="Lost">Lost</option>
                           </select>
-                          <button onClick={() => { setEditingDeal(deal._id); setEditDealAmount(deal.amount); setEditDealCloseDate(deal.closeDate ? new Date(deal.closeDate).toISOString().split("T")[0] : ""); }}
-                            className="bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-200">Edit</button>
+                          <button
+                            onClick={() => {
+                              setEditingDeal(deal._id);
+                              setEditDealAmount(deal.amount);
+                              setEditDealCloseDate(
+                                deal.closeDate
+                                  ? new Date(deal.closeDate)
+                                      .toISOString()
+                                      .split("T")[0]
+                                  : "",
+                              );
+                            }}
+                            className="bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-200"
+                          >
+                            Edit
+                          </button>
                           {isAdmin && (
-                            <button onClick={() => handleDeleteDeal(deal._id)}
-                              className="bg-red-100 text-red-700 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-red-200">Delete</button>
+                            <button
+                              onClick={() => handleDeleteDeal(deal._id)}
+                              className="bg-red-100 text-red-700 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-red-200"
+                            >
+                              Delete
+                            </button>
                           )}
                         </div>
                       </div>
@@ -478,15 +713,12 @@ function LeadDetail() {
 
 export default LeadDetail;
 
-
 // =============================================================================================================================
 // =============================================================================================================================
 // =============================================================================================================================
 // =============================================================================================================================
 // =============================================================================================================================
 // =============================================================================================================================
-
-
 
 // import React, { useEffect, useState } from "react";
 // import { useParams, useNavigate } from "react-router-dom";
